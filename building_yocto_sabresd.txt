@@ -1,0 +1,44 @@
+Poky
+$ sudo install -o $(id -u) -g $(id -g) -d /opt/yocto
+$ cd /opt/yocto
+$ git clone --branch zeus git://git.yoctoproject.org/poky
+
+
+Repo
+$ mkdir -p ${HOME}/bin/
+$ curl https://storage.googleapis.com/git-repo-downloads/repo >
+${HOME}/bin/repo
+$ chmod a+x ${HOME}/bin/repo
+
+
+freescale bsp
+$ mkdir /opt/yocto/fsl-community-bsp
+$ cd /opt/yocto/fsl-community-bsp
+$ repo init -u https://github.com/Freescale/fsl-community-bsp-platform -b zeus
+$ repo sync
+
+
+build images
+cd /opt/yocto/fsl-community-bsp
+MACHINE=imx6qdlsabresd DISTRO=poky source setup-environment imx6qdlsabresd 
+bitbake core-image-minimal
+
+
+copy files to sd card
+sudo apt-get install bmap-tools
+sudo umount /dev/sdN
+cd /opt/yocto/fsl-community-bsp/imx6qdlsabresd/tmp/deploy/images/imx6qdlsabresd/
+sudo bmaptool copy --nobmap core-image-minimal-imx6qdlsabresd.wic.gz /dev/sdc
+
+
+Toaster
+$ sudo apt-get install python3-pip
+$ pip3 install --user -r /opt/yocto/poky/bitbake/toaster-requirements.txt
+
+$ cd /opt/yocto/poky
+$ source oe-init-build-env
+$ source toaster start
+
+To access the web user interface, go to http://127.0.0.1:8000 .
+By default, Toaster binds to localhost on port 8000 , but this can be specified as follows:
+$ source toaster start webport=<IP>:<PORT>

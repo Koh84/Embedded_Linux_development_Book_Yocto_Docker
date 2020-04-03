@@ -1,0 +1,48 @@
+install TFTP server
+sudo apt-get install tftpd-hpa
+sudo chmod 1777 /var/lib/tftpboot
+
+
+copy kernel image and device tree to /var/lib/tftpboot
+cd /opt/yocto/fsl-community-bsp/imx6qdlsabresd/tmp/deploy/images/imx6qdlsabresd/
+cp zImage-imx6qdlsabresd.bin imx6qp-sabresd-imx6qdlsabresd.dtb /var/lib/tftpboot/
+
+
+installing NFS server
+sudo apt-get install nfs-kernel-server
+
+
+By default, the Wandboard only builds WIC images. We will need to modify our build
+project to build a compressed copy of the target's root filesystem.
+
+cd /opt/yocto/fsl-community-bsp/imx6qdlsabresd
+Edit conf/local.conf and add the following:
+IMAGE_FSTYPES = "tar.bz2"
+
+This will build a core-image-minimal-wandboard.tar.bz2 file that we can then
+uncompress under /nfsroot , as follows:
+
+
+$ sudo mkdir /nfsroot
+$ cd /nfsroot
+sudo tar --numeric-owner -x -v -f /opt/yocto/fsl-community-bsp/imx6qdlsabresd/tmp/deploy/images/imx6qdlsabresd/core-image-minimal-imx6qdlsabresd.tar.bz2
+
+
+we will configure the NFS server to export the /nfsroot folder.
+Add the following line to /etc/exports :
+/nfsroot/ *(rw,no_root_squash,async,no_subtree_check)
+$ sudo service nfs-kernel-server restart
+
+in uboot
+> env set netload 'tftpboot ${loadaddr} ${image};tftpboot ${fdt_addr} ${fdt_file}'
+> env set netargs 'setenv bootargs console=${console} ${optargs} root=/dev/nfs ip=${ipaddr} nfsroot=${serverip}:${nfsroot},v3,tcp'
+> env set netboot 'echo Booting from net ...;run netargs;run netload;bootz
+${loadaddr} - ${fdt_addr}'
+
+> env set ipaddr <static_ip>
+> env set serverip <host_ip>
+> env set nfsroot /nfsroot
+> env set image zImage-wandboard.bin
+> env set fdt_file zImage-imx6qp-wandboard-revd1.dtb
+> env save
+> run netboot

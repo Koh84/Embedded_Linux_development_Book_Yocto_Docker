@@ -1,0 +1,32 @@
+/* this tell you the recipe of how to build the verison of linux you want and download right packages */
+Create dockerfile
+
+mkdir sabresd
+cd sabresd
+
+/* this build the docker image and don't use any cached data, called it sabresdkk and latest branch */
+docker build --no-cache --tag "sabresdkk:latest" .
+
+/* list the build image */
+docker image ls
+
+kelvin@kelvin:/opt/yocto/docker-yocto-builder$ docker image ls
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+sabresdkk           latest              04d9c81881a4        5 minutes ago       1.37GB
+ubuntu              18.04               72300a873c2c        2 weeks ago         64.2MB
+ubuntu              latest              72300a873c2c        2 weeks ago         64.2MB
+hello-world         latest              fce289e99eb9        14 months ago       1.84kB
+
+cd /opt/yocto/docker-yocto-builder
+
+/* map host computer's docker-yocto-builder with docker image /opt/yocto/fsl-community-bsp/build directory  and user sabresdkk:latest image */
+docker run -it --rm -v $PWD:/opt/yocto/fsl-community-bsp/build sabresdkk:latest
+
+mkdir -p imx6qpsabresd
+
+MACHINE=imx6qdlsabresd DISTRO=poky source setup-environment imx6qpsabresd 
+
+bitbake core-image-minimal
+
+/* you can now copy deployment image in imx6qpsabresd to /opt/yocto/fsl-community-bsp/build */
+/* the host pc $PWD will be able to receive it */

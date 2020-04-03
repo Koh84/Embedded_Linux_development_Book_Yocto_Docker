@@ -1,0 +1,46 @@
+baudrate=115200
+board_name=SABRESD
+board_rev=MX6QP
+boot_fdt=try
+bootcmd=run findfdt;mmc dev ${mmcdev};if mmc rescan; then if run loadbootscript; then run bootscripti
+bootdelay=2
+bootscript=echo Running bootscript from mmc ...; source
+console=ttymxc0
+dfu_alt_info=spl raw 0x400
+dfu_alt_info_img=u-boot raw 0x10000
+dfu_alt_info_spl=spl raw 0x400
+dfuspi=dfu 0 sf 0:0:10000000:0
+emmcdev=2
+ethact=FEC
+ethaddr=00:04:9f:03:ed:89
+ethprime=FEC
+fb=0
+fdt_addr=0x18000000
+fdt_file=undefined
+fdt_high=0xffffffff
+fdtcontroladdr=4e58a838
+findfdt=if test $fdt_file = undefined; then if test $board_name = SABREAUTO && test $board_rev = MX6;
+finduuid=part uuid mmc ${mmcdev}:2 uuid
+image=zImage
+initrd_high=0xffffffff
+ip_dyn=yes
+loadaddr=0x12000000
+loadbootscript=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};
+loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}
+loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}
+mmcargs=setenv bootargs console=${console},${baudrate} root=PARTUUID=${uuid} rootwait rw ${video_arg}
+mmcboot=echo Booting from mmc ...; run finduuid; run video_args_script; run mmcargs; if test ${boot_;
+mmcdev=1
+mmcpart=1
+netargs=setenv bootargs console=${console},${baudrate} root=/dev/nfs ip=dhcp nfsroot=${serverip}:${np
+netboot=echo Booting from net ...; run netargs; if test ${ip_dyn} = yes; then setenv get_cmd dhcp; e;
+preboot=if hdmidet; then setenv video_interfaces hdmi lvds; else setenv video_interfaces lvds hdmi; ;
+script=boot.scr
+update_emmc_firmware=if test ${ip_dyn} = yes; then setenv get_cmd dhcp; else setenv get_cmd tftp; fii
+update_sd_firmware=if test ${ip_dyn} = yes; then setenv get_cmd dhcp; else setenv get_cmd tftp; fi; i
+video_args_hdmi=setenv video_args $video_args video=mxcfb${fb}:dev=hdmi,1280x720M@60,if=RGB24
+video_args_lcd=setenv video_args $video_args video=mxcfb${fb}:dev=lcd,CLAA-WVGA,if=RGB666
+video_args_lvds=setenv video_args $video_args video=mxcfb${fb}:dev=ldb,LDB-XGA,if=RGB666
+video_args_script=for v in ${video_interfaces}; do run video_args_${v}; setexpr fb $fb + 1; done
+video_interfaces=lvds hdmi
+
